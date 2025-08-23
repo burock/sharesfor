@@ -584,4 +584,5 @@ def json_test():
 
 if __name__ == '__main__':
     # app.run(debug = True, host = "0.0.0.0", port=5010)
-    socketio.run(app, debug = True, host = "0.0.0.0", port=FLASK_PORT)   
+#    socketio.run(app, debug = True, host = "0.0.0.0", port=FLASK_PORT)   
+    socketio.run(app, debug = True, host = "0.0.0.0", port=5015, allow_unsafe_werkzeug=True)   

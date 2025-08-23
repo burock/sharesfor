@@ -177,7 +177,7 @@ function confirmDelete() {
 
                         <input type='hidden' name='audience' value='{{activethr.audience|safe}}'>
                         <input type='hidden' name='tags' value='{{activethr.tags|safe}}'>
-                        
+<!--                        
                         <div class='input-group mt-4 ml-4 col-xl-10'>
                             <textarea type='textarea' name='message' class='form-control' placeholder='{{labels.EnterMsg}}' rows='3'></textarea>"
                             <input type='submit' form='message-add' class='btn-aksiyon' value='{{labels.BtnSend}}' >
@@ -190,6 +190,8 @@ function confirmDelete() {
                             </h6>
                             <input type='file' name='file' >
                         </div>
+-->
+                        {% include "messageentry.html" %}
                         
                     </form>
                     
