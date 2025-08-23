@@ -1,5 +1,6 @@
 <style>
     #chatbox { border: 1px solid #ccc; border-radius: 8px; padding: 10px; width: 400px; }
+/*
     textarea {
       width: 100%;
       min-height: 40px;
@@ -8,16 +9,17 @@
       border-radius: 6px;
       padding: 6px;
       font-size: 14px;
-    }
+    } */
+
     #preview img {
-      max-height: 120px;
-      margin-top: 8px;
+      max-height: 80px;
+      margin-top: px;
       border-radius: 6px;
     }
     .toolbar {
       display: flex;
-      gap: 8px;
-      margin-top: 6px;
+      gap: 4px;
+      margin-top: 2px;
     }
     button {
       border: none;
@@ -31,10 +33,12 @@
     }
   </style>
 
-  <div id="chatbox">
+
     <!-- Önizleme -->
-    <div class='input-group mt-4 ml-4 col-xl-10'>
-        <div id="preview"></div>
+<!--
+    <div id="preview" class="mt-4 ml-4"></div>
+-->
+    <div class='input-group ml-4 mt-4 col-xl-10'>
         <textarea type='textarea' name='message' id="message" class='form-control' placeholder='{{labels.EnterMsg}}' rows='3'></textarea>"
         <input type='submit' form='message-add' class='btn-aksiyon' value='{{labels.BtnSend}}' >
     </div>
@@ -49,10 +53,11 @@
     </div>
 -->
     <!-- Araç çubuğu -->
-    <div class="toolbar">
+    <div class="toolbar ml-4">
+      <div id="preview" class=""></div>
       <button type="button" id="emojiBtn">😀</button>
       <button type="button" id="fileBtn">📎</button>
-      <input type="file" id="fileInput" name="file"accept="image/*" style="display:none">
+      <input type="file" id="fileInput" name="file" style="display:none">
 <!--
       <button id="sendBtn" style="margin-left:auto; background:#007bff; color:white;">Gönder</button>
 -->
@@ -60,7 +65,6 @@
 
     <!-- Emoji picker -->
     <emoji-picker id="emojiPicker" style="display:none"></emoji-picker>
-  </div>
 
   <!-- Emoji picker script -->
   <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
@@ -100,11 +104,17 @@
         emojiPicker.style.display = "none";
       });
 
-      // Paste ile resim yakala
       textarea.addEventListener("paste", (e) => {
         for (const item of e.clipboardData.items) {
-          if (item.type.startsWith("image/")) {
+          if (item.kind === "file") {
             const file = item.getAsFile();
+
+            // DataTransfer kullanarak file input'a yükle
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById("fileInput").files = dataTransfer.files;
+
+            // Eğer istersen önizleme
             const url = URL.createObjectURL(file);
             showPreview(url, file);
           }
@@ -123,10 +133,15 @@
       });
 
       function showPreview(url, file) {
-        preview.innerHTML = `<img src="${url}" alt="preview">`;
+        // Eğer dosya image/* ise önizleme, değilse sadece isim
+        if (file.type.startsWith("image/")) {
+          preview.innerHTML = `<img src="${url}" alt="preview">`;
+        } else {
+          preview.innerHTML = `<p>${file.name}</p>`;
+        }
         preview.dataset.file = file;
       }
-  /*
+ /*
 
       // Mesaj gönder
       function sendMessage() {
