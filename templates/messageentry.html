@@ -21,12 +21,15 @@
       gap: 4px;
       margin-top: 2px;
     }
-    button {
-      border: none;
-      background: #eee;
+    .mm-button {
+      /* border: none;
+      background: #eee;*/
       padding: 6px 8px;
       border-radius: 6px;
-      cursor: pointer;
+      cursor: pointer; 
+      height: 40px;
+      width: 50px;
+      font-size:120%;
     }
     button:hover {
       background: #ddd;
@@ -40,7 +43,7 @@
 -->
     <div class='input-group ml-4 mt-4 col-xl-10'>
         <textarea type='textarea' name='message' id="message" class='form-control' placeholder='{{labels.EnterMsg}}' rows='3'></textarea>"
-        <input type='submit' form='message-add' class='btn-aksiyon' value='{{labels.BtnSend}}' >
+        <input type='submit' form='message-add' id="btnSend" class='btn-aksiyon' value='{{labels.BtnSend}}' >
     </div>
 <!--
     <div class='attach-file mt-1 ml-5'>
@@ -55,8 +58,8 @@
     <!-- Araç çubuğu -->
     <div class="toolbar ml-4">
       <div id="preview" class=""></div>
-      <button type="button" id="emojiBtn">😀</button>
-      <button type="button" id="fileBtn">📎</button>
+      <button type="button" class="mm-button btn-aksiyon" id="emojiBtn">😀</button>
+      <button type="button" class="mm-button btn-aksiyon" id="fileBtn">📎</button>
       <input type="file" id="fileInput" name="file" style="display:none">
 <!--
       <button id="sendBtn" style="margin-left:auto; background:#007bff; color:white;">Gönder</button>
@@ -88,7 +91,7 @@
       textarea.addEventListener("keydown", (e) => {
         if (e.key === "Enter" && !e.shiftKey) {
           e.preventDefault();
-          sendMessage();
+          $('#btnSend').click();
         }
       });
 
