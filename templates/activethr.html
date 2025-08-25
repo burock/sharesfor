@@ -65,7 +65,7 @@ function confirmDelete() {
                 </h4>
                 <h5 class="thread-title-text">{{labels.ThreadTitle}}: 
                     {% if activethr.messages %}
-                        {{activethr.messages[0].message[:150]}}
+                        {{activethr.messages[0].message[:150]|markdown|safe}}
                     {% else %}
                         {{labels.NewThread}}
                     {% endif %}
@@ -140,7 +140,10 @@ function confirmDelete() {
                             <div class="row">
                                 <div class='col-xl-9 bg-msg m-2'>
                                     <div class='text-sm'><b>{{msg.user.name}}</b> - {{ msg.time.strftime("%d/%m/%y-%H:%M")}}</div>
+<!--
                                     {{msg.message | replace("\n","<br>")}}
+-->
+                                    {{ msg.message | markdown | safe }}
                                 </div>
                                 {% if admin_right %}
                                 <div class="col-xl-2">

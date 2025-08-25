@@ -54,7 +54,7 @@
                                 <p class="m-1 text-sm">{{thread.messages[0].time.strftime("%d/%m/%y-%H:%M")}}</p>
                                 <p class="m-1 text-sm">{{labels.RcptsTitle}}: {{thread.audlist}}</p>
                                 <div class="thread-title-text">
-                                    {{thread.messages[0].message[:250]}}
+                                    {{thread.messages[0].message[:250]|markdown|safe}}
                                     {% if thread.messages[0].file %}
                                         <div class='attachment-display  mb-3 ml-4'>
 

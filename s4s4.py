@@ -563,6 +563,34 @@ def test():
     return execute_test(session["user"], session_cookie)
 
 
+""" Markdown support """
+import markdown
+import bleach
+
+# Markdown to safe html
+def render_safe_markdown(text):
+    allowed_tags = list(bleach.sanitizer.ALLOWED_TAGS) + [
+        "p", "pre", "code", "img", "h1", "h2", "h3", "blockquote"
+    ]
+    allowed_attrs = {
+        "a": ["href", "title"],
+        "img": ["src", "alt", "title"],
+    }
+
+    # 1. Markdown'u HTML'e çevir
+    html = markdown.markdown(text, extensions=["extra", "codehilite"])
+
+    # 2. Zararlı içerikleri temizle
+    clean_html = bleach.clean(html, tags=allowed_tags, attributes=allowed_attrs, strip=True)
+
+    return clean_html
+
+# Jinja'da filtre olarak kullanılabilir hale getiriyoruz
+app.jinja_env.filters['markdown'] = render_safe_markdown
+
+
+
+
 """ for development tests
 @app.route('/test_mime', methods=['GET'])
 def test_mime():
