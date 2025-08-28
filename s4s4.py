@@ -40,7 +40,7 @@ def rtg_object_id(id):
     return str(id)
 
 # socketio = SocketIO(app)
-socketio = SocketIO(app, async_handlers=True, cors_allowed_origins="*")
+socketio = SocketIO(app, async_mode="gevent", async_handlers=True, cors_allowed_origins="*")
 
 from bson import ObjectId
 
