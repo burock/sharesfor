@@ -1,6 +1,10 @@
 # sharesfor
 ---
 sharesfor is an open source messaging and collaboration platform, that features simple integration capabilities with your existing applications. 
+
+📌 For a high-level business overview, see our [Executive Brief](./EXECUTIVE_BRIEF.md).
+
+
 sharesfor can relate to objects in your existing application and provide message threads related to that object -and others that may be co-related- thereby sharing and collecting information on it.
 
 Objects can for instance be the accounts, contacts, projects, etc. in your CRM; the courses, lectures, subjects, classes, etc. on your Learning Management Sytem;  or any other item in any of your applications.
@@ -9,12 +13,15 @@ sharesfor provides a familiar real time messaging interface so that users provid
 
 sharesfor provides two interfaces and a common my messages pop-up
 The primary interface lists the shares (threads) that are related to the object for which sharesfor is activated
+
 ![main object page](https://github.com/ceskinat/sharesfor/blob/main/assets/screenshots/objmain.png)
 
 When a thread is clicked a thread detail interface is activated. From here you can view all the messages and shares in that thread, as well as add new mesages/notes to this thread
+
 ![thread detail](https://github.com/ceskinat/sharesfor/blob/main/assets/screenshots/thrdetail.png)
 
 From any of these interfaces, you can activate the "My Messages" pop-up which lists the shares you are in the audience list
+
 ![My Messages](https://github.com/ceskinat/sharesfor/blob/main/assets/screenshots/mymsgs.png)
 
 sharesfor is activated through a POST request with the following parameters:
