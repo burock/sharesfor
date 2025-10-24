@@ -9,9 +9,9 @@ Created on Thu Mar 16 09:23:08 2023
 COonfiguration Parameters and Constants
 """
 
-#USER_EMAIL = "crmdamin@sekom.com.tr"
+# USER_EMAIL = "crmdamin@sekom.com.tr"
 LANG = "en"
-MONGO_CONN_STRING = None #localhost
+MONGO_CONN_STRING = None  # localhost
 
 FLASK_PORT = 5015
 

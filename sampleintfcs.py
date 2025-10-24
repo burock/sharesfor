@@ -13,25 +13,29 @@ Created on Wed Sep 14 13:21:19 2022
 from config import MONGO_CONN_STRING
 
 from pymongo import MongoClient
+
 client = MongoClient(MONGO_CONN_STRING)
-
-
 
 
 # app = Flask(__name__)
 
 # app.register_blueprint(routeX_app)
 
-import re 
+import re
+
+
 def object_list(inp):
     # returns a sample list of objects
     db = client.routeX_demo
-#    lst = list(db.objects.find({"oname": re.compile(inp, re.I)}))
+    #    lst = list(db.objects.find({"oname": re.compile(inp, re.I)}))
     lst = []
     for obj in db.objects.find({"oname": re.compile(inp, re.I)}):
-        lst.append({"id": {"id": [obj["otype"], str(obj["oid"])], "name": obj["oname"]},
-                    "name": obj["otype"] + ":" + obj["oname"]})
-
+        lst.append(
+            {
+                "id": {"id": [obj["otype"], str(obj["oid"])], "name": obj["oname"]},
+                "name": obj["otype"] + ":" + obj["oname"],
+            }
+        )
 
     return lst
 
@@ -46,13 +50,17 @@ def object_name(otype, oid):
 def all_users():
     # returns in the form of {"id": id, "name": username}
     db = client.routeX_demo
-    
-    return [{"id": x["_id"], "name": x["username"], "email": x.get("email", "") } for x in db.users.find()]
+
+    return [
+        {"id": x["_id"], "name": x["username"], "email": x.get("email", "")}
+        for x in db.users.find()
+    ]
     # return [
     #         "ceskinat@gmail.com",
     #         "cem@solusmart.com",
     #         "falan@filan.com"
     #         ]
 
+
 def authorized_users(otype, oid):
-    return all_users() #assume everyone is authorized for every object
+    return all_users()  # assume everyone is authorized for every object

@@ -10,6 +10,7 @@ Interface functions for interfacing with applications
 from config import MONGO_CONN_STRING
 
 from pymongo import MongoClient
+
 client = MongoClient(MONGO_CONN_STRING)
 
 
@@ -22,20 +23,29 @@ from requests import post
 # from __main__ import session
 from flask import session
 
-import re 
+import re
+
+
 def object_list(inp, user):
-    result = post(session["authorized"]["api_urls"]["object_list"], 
-                    data={"inp": inp, "user": user["userid"]})
+    result = post(
+        session["authorized"]["api_urls"]["object_list"],
+        data={"inp": inp, "user": user["userid"]},
+    )
     return result.json()
 
+
 def object_name(otype, oid):
-    result = post(session["authorized"]["api_urls"]["object_name"], 
-                    data={"otype": otype, "oid": oid})
+    result = post(
+        session["authorized"]["api_urls"]["object_name"],
+        data={"otype": otype, "oid": oid},
+    )
     return result.text
 
 
 def authorized_users(otype, oid):
     print("otype: ", otype, "oid: ", oid)
-    result = post(session["authorized"]["api_urls"]["authorized_users"], 
-                    data={"otype": otype, "oid": oid})
+    result = post(
+        session["authorized"]["api_urls"]["authorized_users"],
+        data={"otype": otype, "oid": oid},
+    )
     return result.json()
