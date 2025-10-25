@@ -11,7 +11,7 @@ Created on Tue Feb  1 07:08:59 2022
 # configurations = json.load(f)
 
 # from sampleintfcs import object_name, all_users, authorized_users
-from interfaces import object_name, authorized_users, object_list
+from interfaces import object_name, authorized_users
 from config import (
     LANG,
     MONGO_CONN_STRING,
@@ -22,15 +22,16 @@ from config import (
 
 from datetime import datetime
 
-from pymongo import MongoClient
-
-client = MongoClient(MONGO_CONN_STRING)
+from bson import ObjectId
 
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 import json
+
+from pymongo import MongoClient
+client = MongoClient(MONGO_CONN_STRING)
 
 """ authorization """
 
@@ -62,7 +63,8 @@ def xlate_msg(msg_id, lang):
 
     if (
         msg_id is None
-    ):  # this part returns all messages for xlated_msgs() decorator in app.py; for labels in jinja templates
+    ):  # this part returns all messages for xlated_msgs() decorator in app.py;
+        # for labels in jinja templates
         return {x: LABELS_MSGS[x][LANG] for x in list(LABELS_MSGS)}
 
     return LABELS_MSGS.get(msg_id).get(lang)
@@ -121,7 +123,9 @@ def make_new_thread(rqform, user):
     # creates an active thread object for a new thread (id="0")
     if not rqform.get("audience"):
         audience = [
-            {"id": user["userid"], "name": user["username"], "email": user["email"]}
+            {"id": user["userid"],
+             "name": user["username"],
+             "email": user["email"]}
         ]  # include the user to audience in new threads
     else:
         audience = json.loads(rqform["audience"])
@@ -153,14 +157,17 @@ def make_new_thread(rqform, user):
 def json_dumps(thread):
     # json.dumps audience and tag fields for proper json exchange
     thread["audary"] = thread["audience"]
-    thread["tagary"] = [{"tag": x, "tagidstr": json.dumps(x)} for x in thread["tags"]]
+    thread["tagary"] = [{"tag": x,
+                         "tagidstr": json.dumps(x)}
+                        for x in thread["tags"]]
     thread["audience"] = json.dumps(thread["audience"])
     thread["tags"] = json.dumps(thread["tags"])
     return thread
 
 
 def get_active_thread(thread_id):
-    # retrieves a thread from db and creates fileds required to display the thread
+    # retrieves a thread from db and creates
+    # fileds required to display the thread
     db = client.sharesfor
     thread = db.routings.find_one({"_id": ObjectId(thread_id)})
 
@@ -169,7 +176,8 @@ def get_active_thread(thread_id):
     thread["audlist"] = [x["name"] for x in thread["audience"]]
 
     # thread["authorized_users"] = [x["username"] for x in all_users()]
-    thread["authorized_users"] = authorized_users(thread["obj_type"], thread["obj_id"])
+    thread["authorized_users"] = authorized_users(thread["obj_type"],
+                                                  thread["obj_id"])
 
     # sort the messages in FIFO order
     thread["messages"].sort(key=lambda e: e["time"])
@@ -223,20 +231,22 @@ def delete_from_grid(gid):
     fs.delete(gid)
 
 
-from flask import Response
-
-
 def file_response(file_id, file_name):
     # prepares a response as attachment from GridFS filesystem
+
+    from flask import Response
+
     fs = GridFS(client.grid)
     f = fs.get(ObjectId(file_id))
-    r = Response(f, direct_passthrough=True, mimetype="application/octet-stream")
+    r = Response(f, direct_passthrough=True,
+                 mimetype="application/octet-stream")
     r.headers.set("Content-Disposition", "attachment", filename=file_name)
     return r
 
 
 def create_rt_thread(otype, oid, thr_params, message, rq_files):
-    # creates a new message thread (in DB) and returns the thread id (or exception code)
+    # creates a new message thread (in DB)
+    # and returns the thread id (or exception code)
     db = client.sharesfor
     unread = [x["id"] for x in thr_params["audience"]]
     if thr_params["user"]["userid"] in unread:
@@ -244,7 +254,9 @@ def create_rt_thread(otype, oid, thr_params, message, rq_files):
 
     name = object_name(otype, oid)
     try:
-        msg = {"user": thr_params["user"], "message": message, "time": datetime.now()}
+        msg = {"user": thr_params["user"],
+               "message": message,
+               "time": datetime.now()}
         if "file" in rq_files and rq_files["file"].filename:
             try:
                 attach = handle_attachment(rq_files)
@@ -284,7 +296,9 @@ def add_rt_message(th, user, message, rq_files, source):
     db = client.sharesfor
     try:
         # th = db.routings.find_one({"_id": ObjectId(thr_params["_id"])})
-        usr = {"id": user["userid"], "name": user["username"], "email": user["email"]}
+        usr = {"id": user["userid"],
+               "name": user["username"],
+               "email": user["email"]}
         if usr not in th["audience"]:
             print("3: ", th["audience"])
             th["audience"].append(usr)
@@ -324,7 +338,8 @@ def add_rt_message(th, user, message, rq_files, source):
             th["exc_ID"] = "AddMsgFail"
         elif (
             source != "email" and EMAIL_INTEGRATED
-        ):  # send emails unless the source of message is already email; avoid duplication
+        ):  # send emails unless the source of message is already email
+            # avoid duplication
             pop_emails(th, message, user)
     except Exception as e:
         th["exc_ID"] = e
@@ -335,10 +350,8 @@ def add_rt_message(th, user, message, rq_files, source):
 def remove_from_unread(thread_id, user):
     # remove the useer from unread list
     db = client.sharesfor
-    db.routings.update_one({"_id": thread_id}, {"$pull": {"unread": user["userid"]}})
-
-
-from bson import ObjectId
+    db.routings.update_one({"_id": thread_id},
+                           {"$pull": {"unread": user["userid"]}})
 
 
 def aud_str2ary(audstr):
@@ -396,7 +409,8 @@ def delete_message_from_thread(thread_id, index):
             delete_from_grid(thr["messages"][index]["file"]["gid"])
         thr["messages"].pop(index)
         db.routings.update_one(
-            {"_id": ObjectId(thread_id)}, {"$set": {"messages": thr["messages"]}}
+            {"_id": ObjectId(thread_id)},
+            {"$set": {"messages": thr["messages"]}}
         )
     except:
         thr["exc_ID"] = "DelMsgFail"
@@ -448,8 +462,6 @@ def add_tag_rtg(thr_params, added_tagstr):
         thr_params["thread_id"] = ObjectId(thr_params["_id"])
         try:
             db = client.sharesfor
-            #            res = db.routings.update_one({"_id": ObjectId(thr_params["thread_id"])},
-            #                                   {"$push": {"tags": json.loads(added_tagstr)}})
             res = db.routings.update_one(
                 {"_id": ObjectId(thr_params["thread_id"])},
                 {"$set": {"tags": thr_params["tags"]}},
@@ -509,7 +521,9 @@ def send_email(body, subject, toary, ccary):
 def pop_emails(thread, message, user):
     body = user + ": " + message
     subject = (
-        "akvaryum paylaşım: " + thread.get("obj_name") + " &ID:" + str(thread["_id"])
+        "akvaryum paylaşım: "
+        + thread.get("obj_name")
+        + " &ID:" + str(thread["_id"])
     )
     # toary = thread["audience"]
     toary = ["cem@solusmart.com"]

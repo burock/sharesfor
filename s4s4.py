@@ -5,59 +5,21 @@ Created on Wed Sep 14 113:40 2022
 
 @author: cem
 """
-# monkey patching for gevent with gunicorn
-from gevent import monkey
-
-monkey.patch_all()
-
 
 from flask import (
     Flask,
     render_template,
     request,
     session,
-    redirect,
-    url_for,
-    send_file,
-    abort,
-    jsonify,
+    abort
 )
 
 from config import SECRET_KEY, FLASK_PORT
 
-from flask_socketio import SocketIO, join_room, leave_room, emit
+from flask_socketio import SocketIO, join_room, leave_room
 
 
 import json
-
-app = Flask(__name__)
-app.jinja_loader.searchpath.append("shared/combobox/templates")
-
-
-app.config["SESSION_TYPE"] = "filesystem"
-app.config["SECRET_KEY"] = SECRET_KEY
-
-# from flask_cors import CORS
-# cors = CORS(app,resources={r"/*":{"origins":"*"}})
-
-
-from flask_session import Session  # https://pythonhosted.org/Flask-Session
-
-Session(app)
-
-from interfaces import object_list, object_name, authorized_users
-
-
-def rtg_object_id(id):
-    return str(id)
-
-
-# socketio = SocketIO(app)
-socketio = SocketIO(
-    app, async_mode="gevent", async_handlers=True, cors_allowed_origins="*"
-)
-
-from bson import ObjectId
 
 
 from routings import (
@@ -69,7 +31,6 @@ from routings import (
     get_all_labels,
     get_threads,
     get_active_thread,
-    aud_str2ary,
     make_new_thread,
     json_dumps,
     LANG,
@@ -79,6 +40,36 @@ from routings import (
     get_user_threads,
     admin_auth,
     delete_message_from_thread,
+    add_tag_rtg,
+    del_tag_rtg,
+    file_response
+)
+
+
+from interfaces import object_list, object_name, authorized_users
+
+# monkey patching for gevent with gunicorn
+from gevent import monkey
+monkey.patch_all()
+
+
+app = Flask(__name__)
+app.jinja_loader.searchpath.append("shared/combobox/templates")
+
+app.config["SESSION_TYPE"] = "filesystem"
+app.config["SECRET_KEY"] = SECRET_KEY
+
+from flask_session import Session  # https://pythonhosted.org/Flask-Session
+Session(app)
+
+
+def rtg_object_id(id):
+    return str(id)
+
+
+# socketio = SocketIO(app)
+socketio = SocketIO(
+    app, async_mode="gevent", async_handlers=True, cors_allowed_origins="*"
 )
 
 
@@ -106,7 +97,8 @@ def error_return(e, **kwargs):
 
 
 def render_or_json(template, **kwargs):
-    # return a json or rendered html according to request header accept_mimetypes
+    # return a json or rendered html according to
+    # request header accept_mimetypes
     if kwargs["a_mime"]["application/json"] >= kwargs["a_mime"]["text/html"]:
         return json.dumps(kwargs, default=str)
         """
@@ -152,7 +144,8 @@ def routing_form():
             return render_or_json(
                 "s4s4.html",
                 a_mime=request.accept_mimetypes,
-                obj={"type": otype, "oid": oid, "name": object_name(otype, oid)},
+                obj={"type": otype, "oid": oid,
+                     "name": object_name(otype, oid)},
                 threads=get_threads(otype, oid),
                 # activethr=json_dumps(active_thr),
                 user_threads=get_user_threads(session["user"]),
@@ -182,16 +175,15 @@ def routing_form():
                 )
             print("authorized app")
 
-            # print("AppId: ", request.form["client_id"], ", API key:", request.form["api_key"] )
             otype = request.form.get("otype")
             oid = str(request.form.get("oid"))
             # from an application call the new thread is displayed;
             # the existing threads are displayed by GET calls
-            active_thr = make_new_thread(request.form, session["user"])
+            # active_thr = make_new_thread(request.form, session["user"])
             print("Thread made")
 
             """
-            return render_template('s4s4.html', 
+            return render_template('s4s4.html',
                                    obj={"type": otype,
                                         "oid": oid,
                                         "name": object_name(otype, oid)},
@@ -202,7 +194,8 @@ def routing_form():
             return render_or_json(
                 "s4s4.html",
                 a_mime=request.accept_mimetypes,
-                obj={"type": otype, "oid": oid, "name": object_name(otype, oid)},
+                obj={"type": otype, "oid": oid,
+                     "name": object_name(otype, oid)},
                 threads=get_threads(otype, oid),
                 # activethr=json_dumps(active_thr),
                 user_threads=get_user_threads(session["user"]),
@@ -218,10 +211,10 @@ def edit_thread():
     try:
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
-        action = "display routing"  # for logging
 
         # session["user"] comes from the application
         if not session.get("user") or not session["user"].get("username"):
@@ -260,7 +253,8 @@ def add_message():
 
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
         otype = request.form["otype"]
@@ -268,7 +262,6 @@ def add_message():
 
         if request.form["thread_id"] == "0":  # create new thread
             thread = make_new_thread(request.form, session["user"])
-            action = "route object"  # for logging purpose
 
             thr_params = create_rt_thread(
                 request.form["otype"],
@@ -279,7 +272,6 @@ def add_message():
             )
 
         else:
-            action = "add message"
             thread = get_active_thread(request.form["thread_id"])
             thr_params = add_rt_message(
                 thread,
@@ -300,7 +292,7 @@ def add_message():
             )
 
         """
-        return render_template('s4s4.html', 
+        return render_template('s4s4.html',
                                obj={"type": otype,
                                     "oid": oid,
                                     "name": object_name(otype, oid)},
@@ -360,7 +352,8 @@ def add_audience():
 
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
         if request.form["thread_id"] == "0":
@@ -395,7 +388,7 @@ def add_audience():
         ]  # using |tojson filter in the template
 
         """
-        return render_template('s4s4.html', 
+        return render_template('s4s4.html',
                                obj={"type": otype,
                                     "oid": oid,
                                     "name": object_name(otype, oid)},
@@ -406,7 +399,9 @@ def add_audience():
         return render_or_json(
             "activethr.html",
             a_mime=request.accept_mimetypes,
-            obj={"type": otype, "oid": oid, "name": object_name(otype, oid)},
+            obj={"type": otype,
+                 "oid": oid,
+                 "name": object_name(otype, oid)},
             threads=get_threads(otype, oid),
             activethr=json_dumps(activethr),
             labels=get_all_labels(LANG),
@@ -422,7 +417,8 @@ def del_audience():
 
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
         thread_id = request.form["thread_id"]
@@ -451,7 +447,7 @@ def del_audience():
         ]  # using |tojson filter in the template
 
         """
-        return render_template('s4s4.html', 
+        return render_template('s4s4.html',
                                obj={"type": otype,
                                     "oid": oid,
                                     "name": object_name(otype, oid)},
@@ -478,8 +474,6 @@ def del_audience():
       "name": <object_name>}]
 """
 
-from routings import add_tag_rtg, del_tag_rtg
-
 
 @app.route("/add_tag", methods=["POST"])
 def add_tag():
@@ -489,7 +483,8 @@ def add_tag():
 
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
         otype = request.form["otype"]
@@ -511,7 +506,7 @@ def add_tag():
             )
 
         """
-        return render_template('s4s4.html', 
+        return render_template('s4s4.html',
                                obj={"type": otype,
                                     "oid": oid,
                                     "name": object_name(otype, oid)},
@@ -540,7 +535,8 @@ def del_tag():
 
         if not session["authorized"]:
             return error_return(
-                get_error_message("AppNotAuth", LANG), a_mime=request.accept_mimetypes
+                get_error_message("AppNotAuth", LANG),
+                a_mime=request.accept_mimetypes
             )
 
         otype = request.form["otype"]
@@ -561,7 +557,7 @@ def del_tag():
             )
 
         """
-        return render_template('s4s4.html', 
+        return render_template('s4s4.html',
                                obj={"type": otype,
                                     "oid": oid,
                                     "name": object_name(otype, oid)},
@@ -594,8 +590,6 @@ def obj_list():
     #    return object_list_html(request.form.get("name"))
     return json.dumps(object_list(request.form.get("name"), session["user"]))
 
-
-from routings import file_response
 
 
 @app.route("/download_file", methods=["GET"])
@@ -655,10 +649,10 @@ def render_safe_markdown(text):
         "img": ["src", "alt", "title"],
     }
 
-    # 1. Markdown'u HTML'e çevir
+    # 1. Markdown to HTML
     html = markdown.markdown(text, extensions=["extra", "codehilite"])
 
-    # 2. Zararlı içerikleri temizle
+    # 2. bleach
     clean_html = bleach.clean(
         html, tags=allowed_tags, attributes=allowed_attrs, strip=True
     )
@@ -666,14 +660,15 @@ def render_safe_markdown(text):
     return clean_html
 
 
-# Jinja'da filtre olarak kullanılabilir hale getiriyoruz
+# Convert to jinja filter
 app.jinja_env.filters["markdown"] = render_safe_markdown
 
 
 """ for development tests
 @app.route('/test_mime', methods=['GET'])
 def test_mime():
-    return str(request.accept_mimetypes["application/json"]) + " ; " + str(request.accept_mimetypes["text/html"])
+    return str(request.accept_mimetypes["application/json"]) + " ; " 
+               + str(request.accept_mimetypes["text/html"])
 
 
 
@@ -691,5 +686,6 @@ def json_test():
 
 if __name__ == "__main__":
     # app.run(debug = True, host = "0.0.0.0", port=5010)
-    #    socketio.run(app, debug = True, host = "0.0.0.0", port=FLASK_PORT)
-    socketio.run(app, debug=True, host="0.0.0.0", port=5015, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True, host="0.0.0.0", port=FLASK_PORT)
+    # socketio.run(app, debug=True, host="0.0.0.0", port=FLASK_PORT,
+    #              allow_unsafe_werkzeug=True)

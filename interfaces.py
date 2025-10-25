@@ -9,11 +9,6 @@ Interface functions for interfacing with applications
 
 from config import MONGO_CONN_STRING
 
-from pymongo import MongoClient
-
-client = MongoClient(MONGO_CONN_STRING)
-
-
 from requests import post
 
 # app = Flask(__name__)
@@ -23,7 +18,8 @@ from requests import post
 # from __main__ import session
 from flask import session
 
-import re
+from pymongo import MongoClient
+client = MongoClient(MONGO_CONN_STRING)
 
 
 def object_list(inp, user):

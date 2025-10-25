@@ -5,7 +5,9 @@
 
 # from cp_interfaces import client, object_list
 
-from routings import make_new_thread, get_active_thread, client, object_list, ObjectId
+from routings import make_new_thread, get_active_thread, client, ObjectId
+
+from interfaces import object_list
 
 from random import randint
 
