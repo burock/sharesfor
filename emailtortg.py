@@ -5,7 +5,7 @@ Created on Fri Jul 22 15:47:01 2022
 
 @author: cem
 """
-from sampleintfcs import EMAIL_INTEGRATED, EMAIL_SENDER_ACC, EMAIL_SENDER_PWD
+from config import EMAIL_INTEGRATED, EMAIL_SENDER_ACC, EMAIL_SENDER_PWD, EMAIL_SUBJECT_PREFIX
 
 import email
 from email.header import decode_header, make_header
@@ -18,7 +18,7 @@ imap_server = "imap.gmail.com"
 email_acc = EMAIL_SENDER_ACC
 email_pwd = EMAIL_SENDER_PWD
 
-SUBJ_PATTERN = "akvaryum paylaşım"
+SUBJ_PATTERN = EMAIL_SUBJECT_PREFIX
 PREV_MAIL_REGEX = "On.*at.*wrote:"
 
 

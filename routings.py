@@ -18,6 +18,7 @@ from config import (
     EMAIL_SENDER_ACC,
     EMAIL_SENDER_PWD,
     EMAIL_INTEGRATED,
+    EMAIL_SUBJECT_PREFIX
 )
 
 from datetime import datetime
@@ -521,14 +522,13 @@ def send_email(body, subject, toary, ccary):
 def pop_emails(thread, message, user):
     body = user + ": " + message
     subject = (
-        "akvaryum paylaşım: "
+        EMAIL_SUBJECT_PREFIX
         + thread.get("obj_name")
         + " &ID:" + str(thread["_id"])
     )
-    # toary = thread["audience"]
-    toary = ["cem@solusmart.com"]
+    toary = [x["email"] for x in thread["audience"]]
 
-    ccary = ["akvaryum.solusmart.com"]
+    ccary = [EMAIL_SENDER_ACC]
 
     send_email(body, subject, toary, ccary)
 

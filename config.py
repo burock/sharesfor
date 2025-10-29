@@ -21,5 +21,6 @@ SECRET_KEY = b'_5#y2L"F4Q8z\n\xec]/'
 EMAIL_INTEGRATED = False
 EMAIL_SENDER_ACC = "senderaddr@youremail"
 EMAIL_SENDER_PWD = "your_password"
+EMAIL_SUBJECT_PREFIX = "share for:"
 
 STYLE_SHEET = "style_new.css"
