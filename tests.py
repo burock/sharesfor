@@ -9,6 +9,8 @@ from routings import make_new_thread, get_active_thread, client, ObjectId
 
 from interfaces import object_list
 
+from config import FLASK_PORT
+
 from random import randint
 
 import requests
@@ -47,7 +49,7 @@ class test_thread:
             "message": message,
         }
         res = requests.post(
-            "http://localhost:5010/add_message", data=params, headers=self.headers
+            "http://localhost:" + str(FLASK_PORT) + "/add_message", data=params, headers=self.headers
         )
         try:
             res = json.loads(res.text)
@@ -66,7 +68,7 @@ class test_thread:
             "slct-aud": aud["id"] + "||" + aud["name"] + "||" + aud["email"],
         }
         res = requests.post(
-            "http://localhost:5010/add_audience", data=params, headers=self.headers
+            "http://localhost:" + str(FLASK_PORT) + "/add_audience", data=params, headers=self.headers
         )
         try:
             res = json.loads(res.text)
@@ -85,7 +87,7 @@ class test_thread:
             "slct-del-aud": aud["id"],
         }
         res = requests.post(
-            "http://localhost:5010/del_audience", data=params, headers=self.headers
+            "http://localhost:" + str(FLASK_PORT) + "/del_audience", data=params, headers=self.headers
         )
         try:
             res = json.loads(res.text)
@@ -104,7 +106,7 @@ class test_thread:
             "obj_id": json.dumps(tag),
         }
         res = requests.post(
-            "http://localhost:5010/add_tag", data=params, headers=self.headers
+            "http://localhost:" + str(FLASK_PORT) + "/add_tag", data=params, headers=self.headers
         )
         try:
             res = json.loads(res.text)
@@ -123,7 +125,7 @@ class test_thread:
             "slct-del-tag": json.dumps(tag),
         }
         res = requests.post(
-            "http://localhost:5010/del_tag", data=params, headers=self.headers
+            "http://localhost:" + str(FLASK_PORT) + "/del_tag", data=params, headers=self.headers
         )
         try:
             res = json.loads(res.text)
@@ -135,7 +137,7 @@ class test_thread:
 
 def execute_test(user, session_cookie):
 
-    db = client.routeX  # to write the test_results to db
+    db = client.sharesfor # to write the test_results to db
 
     lst = object_list("", user)
     obj = lst[randint(0, len(lst) - 1)]
