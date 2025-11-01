@@ -20,6 +20,8 @@ from datetime import datetime
 
 from flask import request
 
+db = client.sharesfor 
+
 
 class test_thread:
 
@@ -56,6 +58,16 @@ class test_thread:
         except:
             return res.text
         res["date"] = datetime.now()
+        if type(res) != dict or not res.get("activethr"):
+            return res
+
+        res["action"] = "Create Message"
+        # check if the message is really added
+        chk = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
+        res["success"] = True if chk else False  # add any other checks here
+
+        db.test_results.insert_one(res)
+
         return res
 
     def add_audience(self, aud):
@@ -74,7 +86,22 @@ class test_thread:
             res = json.loads(res.text)
         except:
             return res.text
+        
+        if type(res) != dict or not res.get("activethr"):
+            return res
+
+        res["action"] = "Add person to audience"
+
+        doc = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
+        if doc and aud in doc.get("audience", []):
+            res["success"] = True
+        else:
+            res["success"] = False
+
+        db.test_results.insert_one(res)
+
         res["date"] = datetime.now()
+
         return res
 
     def del_audience(self, aud):
@@ -93,6 +120,19 @@ class test_thread:
             res = json.loads(res.text)
         except:
             return res.text
+
+        if type(res) != dict or not res.get("activethr"):
+            return res
+
+        res["action"] = "Delete person from audience"
+        doc = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
+        if doc and aud not in doc.get("audience", []):
+            res["success"] = True
+        else:
+            res["success"] = False
+
+        db.test_results.insert_one(res)
+
         res["date"] = datetime.now()
         return res
 
@@ -112,7 +152,22 @@ class test_thread:
             res = json.loads(res.text)
         except:
             return res.text
+        
         res["date"] = datetime.now()
+
+        if type(res) != dict or not res.get("activethr"):
+            return res
+
+        res["action"] = "Add tag to tags"
+        # check if tag exists
+        doc = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
+        if doc and tag in doc.get("tags", []):
+            res["success"] = True
+        else:
+            res["success"] = False
+
+        db.test_results.insert_one(res)
+
         return res
 
     def del_tag(self, tag):
@@ -132,12 +187,24 @@ class test_thread:
         except:
             return res.text
         res["date"] = datetime.now()
+
+        if type(res) != dict or not res.get("activethr"):
+            return res
+
+        res["action"] = "Delete tag from tags"
+        doc = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
+        if doc and tag not in doc.get("tags", []):
+            res["success"] = True
+        else:
+            res["success"] = False
+
+        db.test_results.insert_one(res)
+
         return res
 
 
 def execute_test(user, session_cookie):
 
-    db = client.sharesfor # to write the test_results to db
 
     lst = object_list("", user)
     obj = lst[randint(0, len(lst) - 1)]
@@ -149,16 +216,7 @@ def execute_test(user, session_cookie):
     thread = test_thread(otype, oid, "0", user, session_cookie)
     result = thread.add_message("Bu test modülünden eklenmiş bir mesajdır")
 
-    if type(result) != dict or not result.get("activethr"):
-        return result
-
-    result["action"] = "Create Message"
-    # check if the message is really added
-    chk = db.routings.find_one({"_id": ObjectId(result["activethr"]["_id"])})
-    result["success"] = True if chk else False  # add any other checks here
     success_list = [(result["action"], result["success"])]
-
-    db.test_results.insert_one(result)
 
     # add a random person to audience
 
@@ -173,36 +231,12 @@ def execute_test(user, session_cookie):
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
     result = thread.add_audience(person)
 
-    if type(result) != dict or not result.get("activethr"):
-        return result
-
-    result["action"] = "Add person to audience"
-
-    doc = db.routings.find_one({"_id": ObjectId(result["activethr"]["_id"])})
-    if doc and person in doc.get("audience", []):
-        result["success"] = True
-    else:
-        result["success"] = False
     success_list.append((result["action"], result["success"]))
-
-    db.test_results.insert_one(result)
 
     # now remove the person from the audience
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
     result = thread.del_audience(person)
-
-    if type(result) != dict or not result.get("activethr"):
-        return result
-
-    result["action"] = "Delete person from audience"
-    doc = db.routings.find_one({"_id": ObjectId(result["activethr"]["_id"])})
-    if doc and person not in doc.get("audience", []):
-        result["success"] = True
-    else:
-        result["success"] = False
     success_list.append((result["action"], result["success"]))
-
-    db.test_results.insert_one(result)
 
     # add a random tag to the thread
     taglist = object_list("", user)
@@ -210,35 +244,12 @@ def execute_test(user, session_cookie):
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
     result = thread.add_tag(tag)
 
-    if type(result) != dict or not result.get("activethr"):
-        return result
-
-    result["action"] = "Add tag to tags"
-    # check if tag exists
-    doc = db.routings.find_one({"_id": ObjectId(result["activethr"]["_id"])})
-    if doc and tag in doc.get("tags", []):
-        result["success"] = True
-    else:
-        result["success"] = False
     success_list.append((result["action"], result["success"]))
-
-    db.test_results.insert_one(result)
 
     # delete the tag added in the previous step
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
     result = thread.del_tag(tag)
 
-    if type(result) != dict or not result.get("activethr"):
-        return result
-
-    result["action"] = "Delete tag from tags"
-    doc = db.routings.find_one({"_id": ObjectId(result["activethr"]["_id"])})
-    if doc and tag not in doc.get("tags", []):
-        result["success"] = True
-    else:
-        result["success"] = False
     success_list.append((result["action"], result["success"]))
-
-    db.test_results.insert_one(result)
 
     return success_list
