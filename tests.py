@@ -202,6 +202,17 @@ class test_thread:
 
         return res
 
+    def remove(self):
+        # remove the thread upon completing the test
+        result =  db.routings.delete_one({"_id": ObjectId(self._id)})
+        res = {"action": "Remove Thread",
+               "success": True if result.deleted_count == 1 else False,
+               "deleted_count": result.deleted_count
+        }
+
+        db.test_results.insert_one(res)
+
+        return res
 
 def execute_test(user, session_cookie):
 
@@ -249,6 +260,10 @@ def execute_test(user, session_cookie):
     # delete the tag added in the previous step
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
     result = thread.del_tag(tag)
+
+    success_list.append((result["action"], result["success"]))
+
+    result = thread.remove()
 
     success_list.append((result["action"], result["success"]))
 
