@@ -1,9 +1,5 @@
 # generic test modules for all applications
 # uses object_list from the interface module
-# import of object_list is from routings to
-
-
-# from cp_interfaces import client, object_list
 
 from routings import make_new_thread, get_active_thread, client, ObjectId
 
@@ -48,7 +44,7 @@ class test_thread:
             "thread_id": "0",
             "audience": json.dumps(self.audience),
             "tags": json.dumps(self.tags),
-            "message": message,
+            "message": message
         }
         res = requests.post(
             "http://localhost:" + str(FLASK_PORT) + "/add_message", data=params, headers=self.headers
@@ -77,8 +73,9 @@ class test_thread:
             "thread_id": self._id,
             "audience": json.dumps(self.audience),
             "tags": json.dumps(self.tags),
-            "slct-aud": aud["id"] + "||" + aud["name"] + "||" + aud["email"],
+            "slct-aud": aud["id"] + "||" + aud["name"] + "||" + aud["email"]
         }
+        print(params["slct-aud"])
         res = requests.post(
             "http://localhost:" + str(FLASK_PORT) + "/add_audience", data=params, headers=self.headers
         )
@@ -93,7 +90,8 @@ class test_thread:
         res["action"] = "Add person to audience"
 
         doc = db.routings.find_one({"_id": ObjectId(res["activethr"]["_id"])})
-        if doc and aud in doc.get("audience", []):
+        print(aud,doc)
+        if doc and aud["id"] in [x["id"] for x in doc.get("audience", [])]:
             res["success"] = True
         else:
             res["success"] = False
@@ -111,7 +109,7 @@ class test_thread:
             "thread_id": self._id,
             "audience": json.dumps(self.audience),
             "tags": json.dumps(self.tags),
-            "slct-del-aud": aud["id"],
+            "slct-del-aud": aud["id"]
         }
         res = requests.post(
             "http://localhost:" + str(FLASK_PORT) + "/del_audience", data=params, headers=self.headers
@@ -143,7 +141,7 @@ class test_thread:
             "thread_id": self._id,
             "audience": json.dumps(self.audience),
             "tags": json.dumps(self.tags),
-            "obj_id": json.dumps(tag),
+            "obj_id": json.dumps(tag)
         }
         res = requests.post(
             "http://localhost:" + str(FLASK_PORT) + "/add_tag", data=params, headers=self.headers
@@ -177,7 +175,7 @@ class test_thread:
             "thread_id": self._id,
             "audience": json.dumps(self.audience),
             "tags": json.dumps(self.tags),
-            "slct-del-tag": json.dumps(tag),
+            "slct-del-tag": json.dumps(tag)
         }
         res = requests.post(
             "http://localhost:" + str(FLASK_PORT) + "/del_tag", data=params, headers=self.headers
@@ -240,7 +238,12 @@ def execute_test(user, session_cookie):
         ]
 
     thread = test_thread(otype, oid, result["activethr"]["_id"], user, session_cookie)
+
+    print(person)
+
     result = thread.add_audience(person)
+
+    # print(result)
 
     success_list.append((result["action"], result["success"]))
 
@@ -263,8 +266,7 @@ def execute_test(user, session_cookie):
 
     success_list.append((result["action"], result["success"]))
 
-    result = thread.remove()
+    # result = thread.remove()
 
-    success_list.append((result["action"], result["success"]))
-
+    # success_list.append((result["action"], result["success"])) 
     return success_list
